@@ -44,6 +44,7 @@ def sroute(l):
    return  internet_configs
 
 def tunnel(l):
+   b=""
    if l == 'Cbtme-Hub':
       b = [ 'int tunnel 1',
             'ip add 192.168.200.1 255.255.255.0',
@@ -58,24 +59,54 @@ def tunnel(l):
             'No au',
             'Net 192.168.200.1 0.0.0.0',
             'Net 1.1.1.1 0.0.0.0',
-            'Net 11.11.11.11 0.0.0.0'
+            'Net 11.11.11.11 0.0.0.0',
+            'exi',
+            'crypto isakmp policy 1',
+            'encr 3des',
+            'hash md5',
+            'authentication pre-share',
+            'lifetime 86400',
+            'group 2',
+            'exi',
+            'crypto isakmp key rowida address 0.0.0.0',
+            'crypto ipsec transform-set TS esp-3des esp-md5-hmac',
+            'crypto ipsec profile protect-gre',
+            'set security-association lifetime seconds 86400',
+            'set transform-set TS',
+            'interface Tunnel 1',
+            'tunnel protection ipsec profile protect-gre',
            ]
    elif l == 'Cbtme-Spoke1':
-      b = ['int tunnel 1',
-         'ip add 192.168.200.2 255.255.255.0',
-         'tunnel source 120.120.120.1',
-         'tunnel mode gre multipoint',
-         'ip nhrp network 111',
-         'ip nhrp map 192.168.200.1 110.110.110.1',
-         'ip nhrp nhs 192.168.200.1',
-         'ip nhrp map multicast 110.110.110.1',
-         'exi',
-         'Router eigrp 100',
-         'No au',
-         'Net 192.168.200.2 0.0.0.0',
-         'Net 2.2.2.2 0.0.0.0',
-         'Net 22.22.22.22 0.0.0.0'
-          ]
+      b = [ 'int tunnel 1',
+            'ip add 192.168.200.2 255.255.255.0',
+            'tunnel source 120.120.120.1',
+            'tunnel mode gre multipoint',
+            'ip nhrp network 111',
+            'ip nhrp map 192.168.200.1 110.110.110.1',
+            'ip nhrp nhs 192.168.200.1',
+            'ip nhrp map multicast 110.110.110.1',
+            'exi',
+            'Router eigrp 100',
+            'No au',
+            'Net 192.168.200.2 0.0.0.0',
+            'Net 2.2.2.2 0.0.0.0',
+            'Net 22.22.22.22 0.0.0.0',
+            'exi',
+            'crypto isakmp policy 1',
+            'encr 3des',
+            'hash md5',
+            'authentication pre-share',
+            'group 2',
+            'lifetime 86400',
+            'exi',
+            'crypto isakmp key rowida address 0.0.0.0',
+            'crypto ipsec transform-set TS esp-3des esp-md5-hmac',
+            'crypto ipsec profile protect-gre',
+            'set security-association lifetime seconds 86400',
+            'set transform-set TS',
+            'interface Tunnel 1',
+            'tunnel protection ipsec profile protect-gre'
+           ]
    elif l == 'Cbtme-Spoke2':
       b = ['int tunnel 1',
          'ip add 192.168.200.3 255.255.255.0',
@@ -90,10 +121,25 @@ def tunnel(l):
          'No au',
          'Net 192.168.200.3 0.0.0.0',
          'Net 3.3.3.3 0.0.0.0',
-         'Net 33.33.33.33 0.0.0.0'
+         'Net 33.33.33.33 0.0.0.0',
+         'exi',
+         'crypto isakmp policy 1',
+         'encr 3des',
+         'hash md5',
+         'authentication pre-share',
+         'group 2',
+         'lifetime 86400',
+         'exi',
+         'crypto isakmp key rowida address 0.0.0.0',
+         'crypto ipsec transform-set TS esp-3des esp-md5-hmac',
+         'crypto ipsec profile protect-gre',
+         'set security-association lifetime seconds 86400',
+         'set transform-set TS',
+         'interface Tunnel 1',
+         'tunnel protection ipsec profile protect-gre'
          ]
-   else:
-      b="do show banner motd"
+   # else:
+   #    b="do show banner motd"
    with open("%s interface_configs.txt" % l.rstrip(), "a") as f:
       f.writelines(["%s\n" % item  for item in b])
    return b
@@ -110,20 +156,18 @@ cisco = {
 ch = ConnectHandler(**cisco)
 if ch:
    print("success")
-else:
-   print("connection not establishment")
+
 s = ch.send_command("show running-config | include hostname ")
 s = s.split()
-s=s[1]
-if s=='Internet':
-   m =[network(s)]
+s = s[1]
+if s == 'Internet':
+   m = [network(s)]
 else:
    m = [ network(s), sroute(s) ]
 for a in m:
    config_set = a.split("\n")
    output = ch.send_config_set(config_set)
    print(output)
-if tunnel(s):
    o = ch.send_config_set(tunnel(s))
    print(o)
 

@@ -2,21 +2,21 @@ interface g0/3
   description connect to Internet
   ip add 130.130.130.1 255.255.255.0
   no shutdown
+  exi
 
- 
-interface loop 0
+ interface loop 0
   description connect to network1
   ip add 3.3.3.3 255.255.255.0
   no shutdown
+  exi
 
- 
-interface loop 1
+ interface loop 1
   description connect to network2
   ip add 33.33.33.33 255.255.255.0
   no shutdown
+  exi
 
- 
-ip route 110.110.110.0 255.255.255.0 130.130.130.2
+ ip route 110.110.110.0 255.255.255.0 130.130.130.2
 
  
 ip route 120.120.120.0 255.255.255.0 130.130.130.2
@@ -35,4 +35,46 @@ Router eigrp 100
 No au
 Net 192.168.200.3 0.0.0.0
 Net 3.3.3.3 0.0.0.0
-Net 33.33.33.33 0.0.0.0
+Net 33.33.33.33 0.0.0.0exi
+crypto isakmp policy 1
+encr 3des
+hash md5
+authentication pre-share
+group 2
+lifetime 86400
+exi
+crypto isakmp key rowida address 0.0.0.0
+crypto ipsec transform-set TS esp-3des esp-md5-hmac
+crypto ipsec profile protect-gre
+set security-association lifetime seconds 86400
+set transform-set TS
+interface Tunnel 1
+tunnel protection ipsec profile protect-gre
+int tunnel 1
+ip add 192.168.200.3 255.255.255.0
+tunnel source 130.130.130.1
+tunnel mode gre multipoint
+ip nhrp network 111
+ip nhrp map 192.168.200.1 110.110.110.1
+ip nhrp nhs 192.168.200.1
+ip nhrp map multicast 110.110.110.1
+exi
+Router eigrp 100
+No au
+Net 192.168.200.3 0.0.0.0
+Net 3.3.3.3 0.0.0.0
+Net 33.33.33.33 0.0.0.0exi
+crypto isakmp policy 1
+encr 3des
+hash md5
+authentication pre-share
+group 2
+lifetime 86400
+exi
+crypto isakmp key rowida address 0.0.0.0
+crypto ipsec transform-set TS esp-3des esp-md5-hmac
+crypto ipsec profile protect-gre
+set security-association lifetime seconds 86400
+set transform-set TS
+interface Tunnel 1
+tunnel protection ipsec profile protect-gre
